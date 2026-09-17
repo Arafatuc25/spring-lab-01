@@ -1,4 +1,4 @@
-package kz.iitu.springab.web;
+package kz.iitu.springlab.web;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
