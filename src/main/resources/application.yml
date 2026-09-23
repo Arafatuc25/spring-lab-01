@@ -18,3 +18,9 @@ app:
 logging:
   level:
     kz.iitu: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,env,configprops,conditions
