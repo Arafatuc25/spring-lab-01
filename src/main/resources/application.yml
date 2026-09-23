@@ -15,6 +15,13 @@ app:
     timeout: 5s
     enabled: true
 
+  locale:
+    default-locale: en
+    supported:
+      - ru
+      - kk
+      - en
+
 logging:
   level:
     kz.iitu: INFO

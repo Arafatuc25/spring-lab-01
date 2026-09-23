@@ -6,6 +6,12 @@ app:
     enabled: false
     retry-count: 1
 
+  locale:
+    default-locale: ru
+    supported:
+      - ru
+      - kk
+
 logging:
   level:
     kz.iitu: DEBUG

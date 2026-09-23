@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -21,8 +22,8 @@ public class Lab3Controller {
     public Lab3Controller(
             AppProperties props,
             EnvironmentBanner banner,
-            Environment environment) {
-
+            Environment environment
+    ) {
         this.props = props;
         this.banner = banner;
         this.environment = environment;
@@ -31,18 +32,27 @@ public class Lab3Controller {
     @GetMapping("/config")
     public Map<String, Object> config() {
 
-        return Map.of(
-                "owner", props.owner(),
-                "group", props.group(),
-                "mailFrom", props.mail().from(),
-                "mailRetryCount", props.mail().retryCount(),
-                "mailTimeout", props.mail().timeout().toString(),
-                "mailEnabled", props.mail().enabled(),
-                "serverPort", environment.getProperty("server.port"),
-                "activeProfiles", Arrays.asList(
-                        environment.getActiveProfiles()
-                ),
-                "banner", banner.describe()
-        );
+        Map<String, Object> result = new LinkedHashMap<>();
+
+        result.put("owner", props.owner());
+        result.put("group", props.group());
+
+        result.put("mailFrom", props.mail().from());
+        result.put("mailRetryCount", props.mail().retryCount());
+        result.put("mailTimeout", props.mail().timeout().toString());
+        result.put("mailEnabled", props.mail().enabled());
+
+        result.put("defaultLocale", props.locale().defaultLocale());
+        result.put("supportedLocales", props.locale().supported());
+
+        result.put("serverPort",
+                environment.getProperty("server.port"));
+
+        result.put("activeProfiles",
+                Arrays.asList(environment.getActiveProfiles()));
+
+        result.put("banner", banner.describe());
+
+        return result;
     }
 }
