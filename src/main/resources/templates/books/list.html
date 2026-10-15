@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Book Catalogue</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1 th:text="${title}">Book Catalogue</h1>
+
+    <p th:if="${message}"
+       class="flash"
+       th:text="${message}">
+    </p>
+
+    <form method="post"
+          action="/books"
+          class="book-form">
+
+        <input type="text"
+               name="title"
+               placeholder="Book title"
+               required>
+
+        <input type="text"
+               name="author"
+               placeholder="Author"
+               required>
+
+        <input type="number"
+               name="year"
+               placeholder="Year"
+               required>
+
+        <button type="submit">
+            Add book
+        </button>
+
+    </form>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Year</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="book : ${books}">
+            <td th:text="${book.id}">1</td>
+            <td th:text="${book.title}">Title</td>
+            <td th:text="${book.author}">Author</td>
+            <td th:text="${book.year}">2020</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
