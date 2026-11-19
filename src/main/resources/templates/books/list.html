@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="UTF-8">
@@ -14,35 +15,63 @@
 
     <h1 th:text="${title}">Book Catalogue</h1>
 
+    <p>
+        Signed in as:
+        <strong sec:authentication="name">username</strong>
+    </p>
+
+    <p>
+        Roles:
+        <span sec:authentication="principal.authorities">
+            ROLE_USER
+        </span>
+    </p>
+
+    <p sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin}">Administration</a>
+    </p>
+
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Log out</button>
+    </form>
+
     <p th:if="${message}"
        class="flash"
        th:text="${message}">
     </p>
 
-    <form method="post"
-          action="/books"
-          class="book-form">
+    <div sec:authorize="hasRole('ADMIN')">
 
-        <input type="text"
-               name="title"
-               placeholder="Book title"
-               required>
+        <h2>Add a book</h2>
 
-        <input type="text"
-               name="author"
-               placeholder="Author"
-               required>
+        <form method="post"
+              th:action="@{/books}"
+              class="book-form">
 
-        <input type="number"
-               name="year"
-               placeholder="Year"
-               required>
+            <input type="text"
+                   name="title"
+                   placeholder="Book title"
+                   required>
 
-        <button type="submit">
-            Add book
-        </button>
+            <input type="text"
+                   name="author"
+                   placeholder="Author"
+                   required>
 
-    </form>
+            <input type="number"
+                   name="year"
+                   placeholder="Year"
+                   required>
+
+            <button type="submit">Add book</button>
+
+        </form>
+
+    </div>
+
+    <p sec:authorize="!hasRole('ADMIN')">
+        You can view all books and edit books that you own.
+    </p>
 
     <table>
         <thead>
@@ -51,15 +80,31 @@
             <th>Title</th>
             <th>Author</th>
             <th>Year</th>
+            <th>Owner</th>
+            <th>Actions</th>
         </tr>
         </thead>
 
         <tbody>
         <tr th:each="book : ${books}">
-            <td th:text="${book.id}">1</td>
-            <td th:text="${book.title}">Title</td>
-            <td th:text="${book.author}">Author</td>
-            <td th:text="${book.year}">2020</td>
+            <td th:text="${book.id}"></td>
+            <td th:text="${book.title}"></td>
+            <td th:text="${book.author}"></td>
+            <td th:text="${book.year}"></td>
+            <td th:text="${book.ownerUsername}"></td>
+
+            <td>
+                <a sec:authorize="hasRole('ADMIN')"
+                   th:href="@{/books/{id}/edit(id=${book.id})}">
+                    Edit
+                </a>
+
+                <a sec:authorize="!hasRole('ADMIN')"
+                   th:if="${book.ownerUsername == #authentication.name}"
+                   th:href="@{/books/{id}/edit(id=${book.id})}">
+                    Edit
+                </a>
+            </td>
         </tr>
         </tbody>
     </table>

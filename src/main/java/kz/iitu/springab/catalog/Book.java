@@ -4,6 +4,16 @@ public record Book(
         Long id,
         String title,
         String author,
-        int year
+        int year,
+        String ownerUsername
 ) {
+
+    public Book(
+            Long id,
+            String title,
+            String author,
+            int year
+    ) {
+        this(id, title, author, year, null);
+    }
 }

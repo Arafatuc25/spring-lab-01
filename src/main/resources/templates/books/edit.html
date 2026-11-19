@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Edit book</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Edit book</h1>
+
+    <p>
+        Book ID:
+        <strong th:text="${book.id}">1</strong>
+    </p>
+
+    <p>
+        Owner:
+        <strong th:text="${book.ownerUsername}">user</strong>
+    </p>
+
+    <form method="post"
+          th:action="@{/books/{id}/edit(id=${book.id})}"
+          class="book-form">
+
+        <input type="text"
+               name="title"
+               th:value="${book.title}"
+               placeholder="Book title"
+               required>
+
+        <input type="text"
+               name="author"
+               th:value="${book.author}"
+               placeholder="Author"
+               required>
+
+        <input type="number"
+               name="year"
+               th:value="${book.year}"
+               placeholder="Year"
+               required>
+
+        <button type="submit">Save changes</button>
+
+    </form>
+
+    <p>
+        <a th:href="@{/books}">Back to catalogue</a>
+    </p>
+
+</div>
+
+</body>
+</html>

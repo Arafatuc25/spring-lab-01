@@ -1,70 +1,79 @@
 package kz.iitu.springab.catalog;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
+@Transactional(readOnly = true)
 public class BookRepository {
 
-    private final Map<Long, Book> storage =
-            new ConcurrentHashMap<>();
+    private final BookJpaRepository repository;
 
-    private final AtomicLong sequence =
-            new AtomicLong();
-
-    public BookRepository() {
-        save(new Book(
-                null,
-                "Effective Java",
-                "Joshua Bloch",
-                2018
-        ));
-
-        save(new Book(
-                null,
-                "Clean Code",
-                "Robert Martin",
-                2008
-        ));
-
-        save(new Book(
-                null,
-                "Spring in Action",
-                "Craig Walls",
-                2022
-        ));
+    public BookRepository(BookJpaRepository repository) {
+        this.repository = repository;
     }
 
     public List<Book> findAll() {
-        return List.copyOf(storage.values());
+        return repository.findAll(Sort.by("id"))
+                .stream()
+                .map(BookEntity::toBook)
+                .toList();
     }
 
     public Optional<Book> findById(long id) {
-        return Optional.ofNullable(storage.get(id));
+        return repository.findById(id)
+                .map(BookEntity::toBook);
     }
 
+    public boolean isOwner(long id, String username) {
+        if (username == null) {
+            return false;
+        }
+
+        return findById(id)
+                .map(book -> username.equals(book.ownerUsername()))
+                .orElse(false);
+    }
+
+    @Transactional
     public Book save(Book book) {
-        long id = book.id() != null
-                ? book.id()
-                : sequence.incrementAndGet();
+        BookEntity entity;
 
-        Book stored = new Book(
-                id,
-                book.title(),
-                book.author(),
-                book.year()
-        );
+        if (book.id() == null) {
+            if (book.ownerUsername() == null) {
+                throw new IllegalArgumentException(
+                        "Book owner is required"
+                );
+            }
 
-        storage.put(id, stored);
-        return stored;
+            entity = new BookEntity(book);
+        } else {
+            entity = repository.findById(book.id())
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Book not found: " + book.id()
+                            )
+                    );
+
+            entity.update(book);
+        }
+
+        return repository.saveAndFlush(entity).toBook();
     }
 
+    @Transactional
     public boolean deleteById(long id) {
-        return storage.remove(id) != null;
+        Optional<BookEntity> entity = repository.findById(id);
+
+        if (entity.isEmpty()) {
+            return false;
+        }
+
+        repository.delete(entity.get());
+        return true;
     }
 }
