@@ -2,6 +2,7 @@ package kz.iitu.springab.web;
 
 import kz.iitu.springab.catalog.Book;
 import kz.iitu.springab.catalog.BookService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -41,53 +43,44 @@ public class BookRestController {
 
     @GetMapping("/stats")
     public Map<String, Object> stats() {
-
         List<Book> books = service.findAll(null);
 
         Integer earliestYear = books.isEmpty()
                 ? null
-                : books.stream()
-                .mapToInt(Book::year)
-                .min()
-                .orElseThrow();
+                : books.stream().mapToInt(Book::year).min().orElseThrow();
 
         Integer latestYear = books.isEmpty()
                 ? null
-                : books.stream()
-                .mapToInt(Book::year)
-                .max()
-                .orElseThrow();
+                : books.stream().mapToInt(Book::year).max().orElseThrow();
 
-        Map<String, Object> result =
-                new LinkedHashMap<>();
-
+        Map<String, Object> result = new LinkedHashMap<>();
         result.put("count", books.size());
         result.put("earliestYear", earliestYear);
         result.put("latestYear", latestYear);
-
         return result;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> find(
-            @PathVariable long id) {
+    public ResponseEntity<Book> find(@PathVariable long id) {
+        Book book = service.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Book with id " + id + " was not found"));
 
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() ->
-                        ResponseEntity.notFound().build());
+        return ResponseEntity.ok(book);
     }
 
     @PostMapping
-    public ResponseEntity<Book> create(
-            @RequestBody Book book) {
+    public ResponseEntity<Book> create(@RequestBody Book book) {
+        if (book.title() == null || book.title().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Book title must not be blank");
+        }
 
         Book saved = service.create(book);
-
         return ResponseEntity
-                .created(URI.create(
-                        "/api/books/" + saved.id()
-                ))
+                .created(URI.create("/api/books/" + saved.id()))
                 .body(saved);
     }
 
@@ -98,22 +91,14 @@ public class BookRestController {
 
         return service.replace(id, book)
                 .map(ResponseEntity::ok)
-                .orElseGet(() ->
-                        ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable long id) {
-
+    public ResponseEntity<Void> delete(@PathVariable long id) {
         if (service.delete(id)) {
-            return ResponseEntity
-                    .noContent()
-                    .build();
+            return ResponseEntity.noContent().build();
         }
-
-        return ResponseEntity
-                .notFound()
-                .build();
+        return ResponseEntity.notFound().build();
     }
 }

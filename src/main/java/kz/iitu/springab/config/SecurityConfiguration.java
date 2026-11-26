@@ -16,34 +16,30 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
-            throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/login",
-                                "/css/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/books",
-                                "/books/**"
-                        ).hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/books/*/edit"
-                        ).hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(
-                                "/books",
-                                "/books/**"
-                        ).hasRole("ADMIN")
-                        .requestMatchers(
-                                "/admin",
-                                "/admin/**"
-                        ).hasRole("ADMIN")
-                        .anyRequest().denyAll()
+                        .requestMatchers("/", "/login", "/css/**")
+                        .permitAll()
+
+                        // REST API: создание книги и чтение по числовому ID
+                        .requestMatchers(HttpMethod.POST, "/api/books")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/books/{id:[0-9]+}")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // Страницы каталога
+                        .requestMatchers(HttpMethod.GET, "/books", "/books/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/books/*/edit")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/books", "/books/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/admin", "/admin/**")
+                        .hasRole("ADMIN")
+                        .anyRequest()
+                        .denyAll()
                 )
                 .formLogin(form -> form
                         .defaultSuccessUrl("/books", true)
