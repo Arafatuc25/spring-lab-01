@@ -1,6 +1,6 @@
 # Laboratory Work 12 — Test Evidence
 
-Authors: Aitkuzhinov Arafat and Kozy-Korpesh Bekzhan  
+Authors: Aitkuzhinov Arafat
 Branch: `lab12`  
 Variant 5: `MemberService` — membership expired yesterday, tested with a fixed clock.
 
@@ -39,6 +39,14 @@ never called. Branch coverage increased without covering a new source line.
 
 One branch still worth testing is deletion when the book does not exist.
 A test should verify that the API returns 404 rather than reporting a successful deletion.
+
+**Before — line 75 is partially covered (yellow diamond):**
+
+![Before: yellow diamond on line 75](images/coverage-after.png)
+
+**After — line 75 is fully covered (green diamond):**
+
+![After: green diamond on line 75](images/coverage-before.png)
 
 ## 3. PostgreSQL integration test
 
